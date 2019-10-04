@@ -121,6 +121,10 @@ const analyzeJsx = (jsxOutput, options = {}) => {
       if (p.parent.node.type === 'CallExpression' && p.node.name === 'require') {
         return false;
       }
+      // exclude namespace key
+      if (p.parent.node.type === 'JSXNamespacedName') {
+        return false;
+      }
       return true;
     })
     .forEach((p) => {
@@ -156,7 +160,7 @@ const analyzeJsx = (jsxOutput, options = {}) => {
     useMacro: !!variables.find(e => e === '__macro'),
     useFragment: !!variables.find(e => e === 'Fragment'),
     useRequire: !!Object.keys(requires).length,
-    variables: variables.filter(e => ['__macro', 'Fragment'].indexOf(e) === -1),
+    variables: variables.filter(e => ['__macro', 'Fragment', 'fragment'].indexOf(e) === -1),
     requires,
   };
 };
