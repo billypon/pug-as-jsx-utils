@@ -130,7 +130,7 @@ const analyzeJsx = (jsxOutput, options = {}) => {
     .forEach((p) => {
       variables = [...variables, p.node.name];
     });
-  variables = arrayUnique(variables.filter(e => varsToIgnore.indexOf(e) === -1)).sort();
+  variables = arrayUnique(variables.filter(e => varsToIgnore.indexOf(e) === -1).map(x => x.split('-')[0])).sort();
 
   // Get require.
   let requires = {};

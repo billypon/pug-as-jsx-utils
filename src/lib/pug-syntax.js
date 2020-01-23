@@ -8,7 +8,6 @@ const transform = function (ast) {
     let replacement
     switch (node.type) {
       case 'Tag':
-        node.name = node.name.replace(/-/g, '.');
         node.attrs.forEach(attr => {
           let { name, val } = attr;
           if (name.startsWith('...')) {

@@ -242,6 +242,10 @@ const pugToJsx = (source, userOptions = {}) => {
 
   if (options.template) {
     result.imports = result.imports.concat(Object.values(result.requires).map(([ name, moduleName ]) => ({ name, moduleName })));
+    // twist
+    result.jsx = result.jsx
+      .replace(/(<\/?)([^\-:>\s\n]+(-[^\-:>\s\n]+)+)/g, (p0, p1, p2) => `${p1}${p2.replace(/-/g, '.')}`)
+      .replace(/(<\/?)([^.:>\s\n]+(\.[^.:>\s\n]+)+):([^.:>\s\n]+)/g, (p0, p1, p2, p3, p4) => `${p1}${p2}_${p4}`);
     const jsxTemplate = [
       result.useFragment
         ? `import ${_import}, { Fragment } from '${_module}';`
