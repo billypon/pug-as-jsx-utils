@@ -1,4 +1,5 @@
 import { hashCode } from '../lib/util';
+import { transformGetFn } from '../lib/pug-syntax';
 
 const works = [
   // combine the contents of two className attributes.
@@ -22,7 +23,7 @@ const works = [
           .replace(/\n\s+\|\s+/g, ' ')
           .replace(/\\\n\s+/g, ' ');
         const key = hashCode(content);
-        context[key] = content;
+        context[key] = transformGetFn(content);
         return `{__archived_${key}__}`;
       },
     ],

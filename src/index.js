@@ -246,6 +246,10 @@ const pugToJsx = (source, userOptions = {}) => {
     result.jsx = result.jsx
       .replace(/(<\/?)([^\-:>\s\n]+(-[^\-:>\s\n]+)+)/g, (p0, p1, p2) => `${p1}${p2.replace(/-/g, '.')}`)
       .replace(/(<\/?)([^.:>\s\n]+(\.[^.:>\s\n]+)+):([^.:>\s\n]+)/g, (p0, p1, p2, p3, p4) => `${p1}${p2}_${p4}`);
+    // _get
+    if (result.useGet) {
+      result.imports.push({ name: '_get', moduleName: 'lodash-es/get' });
+    }
     const jsxTemplate = [
       result.useFragment
         ? `import ${_import}, { Fragment } from '${_module}';`
