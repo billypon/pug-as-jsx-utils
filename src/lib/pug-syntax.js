@@ -42,10 +42,14 @@ const transform = function (ast) {
                 { type: 'Text', val: '\n)', line, column },
               ];
             }
+            consequent.nodes = isFragmentRequired(consequent.nodes) ? wrapInFragment(consequent.nodes) : consequent.nodes;
             node.alternate = node.alternate || {
               type: 'Block',
-              nodes: [ { type: 'Text', val: '\'\'', line, column } ],
+              nodes: [ { type: 'Text', val: '', line, column } ],
               line,
+            }
+            if (node.alternate.nodes) {
+              node.alternate.nodes = isFragmentRequired(node.alternate.nodes) ? wrapInFragment(node.alternate.nodes) : node.alternate.nodes;
             }
             nodes.unshift(node);
             const alternate = getNodes(node.alternate);
@@ -84,12 +88,15 @@ const transform = function (ast) {
           replacement = [
             { type: 'Text', val: '(() => {\n', line, column },
             { type: 'Text', val: `switch (${expr}) {\n`, line, column },
-            ...block.nodes.map(node => [
-              node.expr !== 'default' ? { type: 'Text', val: `case ${node.expr}:\n`, line, column } : { type: 'Text', val: 'default:\n', line, column },
-              { type: 'Text', val: 'return (', line, column },
-              node.block,
-              { type: 'Text', val: ');\n', line, column },
-            ]),
+            ...block.nodes.map(node => {
+              node.block.nodes = isFragmentRequired(node.block.nodes) ? wrapInFragment(node.block.nodes) : node.block.nodes;
+              return [
+                node.expr !== 'default' ? { type: 'Text', val: `case ${node.expr}:\n`, line, column } : { type: 'Text', val: 'default:\n', line, column },
+                { type: 'Text', val: 'return (', line, column },
+                node.block,
+                { type: 'Text', val: ');\n', line, column },
+              ]
+            }),
             { type: 'Text', val: '}\n', line, column },
             { type: 'Text', val: 'return null;\n', line, column },
             { type: 'Text', val: '})()', line, column },
@@ -139,5 +146,22 @@ function wrapInBrackets(nodes) {
     { type: 'Text', val: '{' },
     ...nodes,
     { type: 'Text', val: '}' },
+  ];
+}
+
+function isFragmentRequired(nodes) {
+  const [ node ] = nodes
+  return nodes.length > 1 || (node && node.type === 'Text')
+}
+
+function wrapInFragment(nodes) {
+  return [
+    {
+      type: 'Tag',
+      name: 'Fragment',
+      block: { type: 'Block', nodes },
+      attrs: [],
+      attributeBlocks: [],
+    }
   ];
 }

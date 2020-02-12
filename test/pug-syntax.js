@@ -45,7 +45,7 @@ div
 
 @EXPECTED:
 <div>
-  {foo ? <div>bar</div> : ''}
+  {foo ? <div>bar</div> : <Fragment></Fragment>}
   {foo ? <div>foo</div> : <div>bar</div>}
   {foo ? <div>foo</div> : bar ? <div>bar</div> : <div>baz</div>}
 </div>
