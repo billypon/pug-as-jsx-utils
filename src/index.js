@@ -12,8 +12,10 @@ import codemod from './codemod';
 import addRoleButton from './codemod/addRoleButton';
 
 const path = require('path');
+const fs = require('fs');
 const generateCode = require('pug-code-gen');
 const runtimeWrap = require('pug-runtime/wrap');
+const { zipObject } = require('lodash');
 
 const jsxPrettierOptions = {
   parser: 'babel',
@@ -113,6 +115,15 @@ const processJsxCode = (jsxCode, options, localWorks, annot, resolves) => {
 
   return result;
 }
+
+let components = fs.readFileSync('node_modules/zarm/es/index.d.ts', 'utf8')
+  .split('\n')
+  .filter(Boolean)
+  .map(x => {
+    const [ , n, p ] = /{ default as ([^ ]+) } from '.\/([^']+)/.exec(x);
+    return [ n, p ]
+  })
+components = zipObject(components.map(x => x[0]), components.map(x => x[1]));
 
 const toJsx = (source, options = {}) => {
   const localWorks = works.map(({ pre, post }) => ({ pre, post, context: {} }));
@@ -249,6 +260,12 @@ const pugToJsx = (source, userOptions = {}) => {
     // _get
     if (result.useGet) {
       result.imports.push({ name: '_get', moduleName: 'lodash-es/get' });
+    }
+    // zarm
+    const zarm = result.variables.filter(x => components[x]);
+    if (zarm.length) {
+      result.imports = result.imports.concat(zarm.map(x => ({ moduleName: 'zarm/' + components[x], name: x })))
+      result.variables = result.variables.filter(x => !components[x]);
     }
     const jsxTemplate = [
       result.useFragment
