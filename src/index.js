@@ -114,6 +114,15 @@ const processJsxCode = (jsxCode, options, localWorks, annot, resolves) => {
   return result;
 }
 
+const antd = {
+  names: Object.keys(require('antd')).filter(x => /^[A-Z]/.test(x)),
+  modules: { },
+};
+antd.names.forEach(name => {
+  const module = name[0].toLowerCase() + name.substr(1).replace(/[A-Z]/g, c => `-${c.toLowerCase()}`);
+  antd.modules[name] = { name, moduleName: `antd/es/${ module }` };
+});
+
 const toJsx = (source, options = {}) => {
   const localWorks = works.map(({ pre, post }) => ({ pre, post, context: {} }));
 
@@ -249,6 +258,12 @@ const pugToJsx = (source, userOptions = {}) => {
     // _get
     if (result.useGet) {
       result.imports.push({ name: '_get', moduleName: 'lodash-es/get' });
+    }
+    // antd
+    const names = antd.names.filter(x => result.variables.includes(x)).sort();
+    if (names.length) {
+      result.imports = result.imports.concat(names.map(x => antd.modules[x]));
+      result.variables = result.variables.filter(x => !names.includes(x)); 
     }
     const jsxTemplate = [
       result.useFragment
